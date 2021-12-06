@@ -171,11 +171,13 @@ class Component(cbase.CsafBase, metaclass=abc.ABCMeta):
     def __getattr__(self, item):
         """access the component parameters in the object dir"""
         if item == "parameters" or item == "default_parameters":
+            return item # HACK: To work with cloudpickle, ray
             raise RuntimeError
         if item in self.parameters:
             return self.parameters[item]
         else:
-            raise RuntimeError(f"component {self.name} has no parameter {item}")
+            raise super().__getattribute__(item) # HACK: To work with cloudpickle, ray
+            #raise RuntimeError(f"component {self.name} has no parameter {item}")
 
     def validate(self) -> None:
         def validate_signature(namev, signature, value):
